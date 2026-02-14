@@ -1,0 +1,116 @@
+<script>
+  // ================= LOVE数字雨 =================
+  const loveCanvas = document.getElementById('loveBg');
+  const loveCtx = loveCanvas.getContext('2d');
+  loveCanvas.width = window.innerWidth;
+  loveCanvas.height = window.innerHeight;
+
+  const chars = ['L', 'O', 'V', 'E', '❤', 'U'];
+  const fontSize = 14;
+  const columns = Math.floor(loveCanvas.width / fontSize);
+  const drops = [];
+
+  for (let i = 0; i < columns; i++) {
+    drops[i] = Math.random() * -200;
+  }
+
+  function drawLoveBg() {
+    loveCtx.fillStyle = 'rgba(0,0,0,0.05)';
+    loveCtx.fillRect(0, 0, loveCanvas.width, loveCanvas.height);
+
+    loveCtx.fillStyle = '#ff6b9d55';
+    loveCtx.font = `${fontSize}px monospace`;
+
+    for (let i = 0; i < drops.length; i++) {
+      const text = chars[Math.floor(Math.random() * chars.length)];
+      loveCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+      if (drops[i] * fontSize > loveCanvas.height && Math.random() > 0.97) {
+        drops[i] = 0;
+      }
+      drops[i] += 1.2;
+    }
+  }
+
+  // ================= 粒子爱心 =================
+  const heartCanvas = document.getElementById('heartCanvas');
+  const heartCtx = heartCanvas.getContext('2d');
+  heartCanvas.width = window.innerWidth;
+  heartCanvas.height = window.innerHeight;
+
+  const particles = [];
+  const particleCount = 3500;
+  let pulse = 0;
+
+  function heartX(t, s) {
+    return s * 17 * Math.pow(Math.sin(t), 3);
+  }
+  function heartY(t, s) {
+    return s * -(16 * Math.cos(t) - 5 * Math.cos(2*t)
+      - 2 * Math.cos(3*t) - Math.cos(4*t));
+  }
+
+  function initParticles() {
+    particles.length = 0;
+    for (let i = 0; i < particleCount; i++) {
+      const t = Math.random() * Math.PI * 2;
+      const scale = 16 + Math.random() * 6;
+
+      particles.push({
+        baseX: heartX(t, scale),
+        baseY: heartY(t, scale),
+        size: Math.random() * 1.3 + 0.6,
+        hue: 335 + Math.random() * 20
+      });
+    }
+  }
+
+  initParticles();
+
+  function drawHeart() {
+
+    heartCtx.clearRect(0, 0, heartCanvas.width, heartCanvas.height);
+
+    pulse += 0.05;
+    const beat = 1 + 0.12 * Math.sin(pulse);
+
+    particles.forEach(p => {
+      const x = heartCanvas.width / 2 + p.baseX * beat;
+      const y = heartCanvas.height / 2 + p.baseY * beat;
+
+      const gradient = heartCtx.createRadialGradient(x, y, 0, x, y, 4);
+      gradient.addColorStop(0, `hsla(${p.hue},100%,70%,1)`);
+      gradient.addColorStop(1, `hsla(${p.hue},100%,50%,0)`);
+
+      heartCtx.beginPath();
+      heartCtx.arc(x, y, p.size * 2, 0, Math.PI * 2);
+      heartCtx.fillStyle = gradient;
+      heartCtx.fill();
+    });
+  }
+
+  // ================= 主循环 =================
+  function loop() {
+    drawLoveBg();
+    drawHeart();
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+
+  // ================= 5秒同步淡入 =================
+  setTimeout(() => {
+    loveCanvas.style.opacity = 0.2;
+    heartCanvas.style.transition = "opacity 1.5s ease";
+    heartCanvas.style.opacity = 1;
+  }, 5000);
+
+  // ================= 窗口适配 =================
+  window.addEventListener('resize', () => {
+    loveCanvas.width = window.innerWidth;
+    loveCanvas.height = window.innerHeight;
+    heartCanvas.width = window.innerWidth;
+    heartCanvas.height = window.innerHeight;
+    initParticles();
+  });
+</script>
